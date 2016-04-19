@@ -1,0 +1,158 @@
+<link rel="import" href="../polymer/polymer.html">
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <x-drilldown></x-drilldown>
+
+@demo
+-->
+<dom-module id="x-drilldown">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+
+  </style>
+
+  <template>
+    <div id="chart_div"></div>
+    <div id="chart_div2"></div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'x-drilldown',
+
+    
+    // Element Lifecycle
+
+    ready: function() {
+      var chartDiv1 = this.$.chart_div;
+      var chartDiv2 = this.$.chartDiv2;
+
+      // Load the Visualization API and the piechart package.
+google.load('visualization', '1', { packages: ['corechart']});
+
+// Set a callback to run when the Google Visualization API is loaded.
+google.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    //Mocked data data and data2 
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Division');
+    data.addColumn('number', 'Year to Date Sales');
+    data.addRows([
+        ['Division 1', 987.12],
+        ['Division 2', 789.23],
+        ['Division 3', 123.34],
+        ['Division 4', 852.45],
+        ['Division 5', 369.56]
+    ]);
+
+    var data2 = new google.visualization.DataTable();
+    data2.addColumn('string', 'Division');
+    data2.addColumn('string', 'Month');
+    data2.addColumn('number', 'Value 1');
+    data2.addColumn('number', 'Value 2');
+    data2.addColumn('number', 'Value 3');
+
+    data2.addRows([
+        ['Division 1', 'Jan', 123.00, 654.05, 987.12],
+        ['Division 1', 'Feb', 123.00, 654.05, 987.12],
+        ['Division 1', 'March', 123.00, 654.05, 987.12],
+        ['Division 2', 'Jan', 223.00, 654.05, 987.12],
+        ['Division 2', 'Feb', 223.00, 654.05, 987.12],
+        ['Division 2', 'March', 223.00, 654.05, 987.12],
+        ['Division 3', 'Jan', 323.00, 654.05, 987.12],
+        ['Division 3', 'Feb', 323.00, 654.05, 987.12],
+        ['Division 3', 'March', 323.00, 654.05, 987.12],
+        ['Division 4', 'Jan', 423.00, 654.05, 987.12],
+        ['Division 4', 'Feb', 423.00, 654.05, 987.12],
+        ['Division 4', 'March', 423.00, 654.05, 987.12],
+        ['Division 5', 'Jan', 523.00, 654.05, 987.12],
+        ['Division 5', 'Feb', 523.00, 654.05, 987.12],
+        ['Store 5', 'Division 5', 523.00, 654.05, 987.12]
+    ]);
+
+    // Instantiate and draw our chart, passing in some options.
+    // Instantiate and draw Pie chart, passing in some options.
+    var chart = new google.visualization.ChartWrapper({
+        formatter: {},
+        chartType: 'PieChart',
+        containerId: 'chart_div',
+        dataTable: data,
+        options: {
+            title: 'Division Year to Date Sales',
+            titleTextSyle: {
+                fontSize: 20,
+                bold: true
+            }
+        }
+    });
+
+    // Instantiate and draw Column chart, passing in some options.
+    var chart2 = new google.visualization.ChartWrapper({
+        formatter: {},
+        chartType: 'ColumnChart',
+        containerId: 'chart_div2',
+        dataTable: data2,
+        options: {
+            title: 'Division Breakdown for ' + data.getValue(0, 0),
+            titleTextSyle: {
+                fontSize: 20,
+                bold: true
+            },
+            vAxis: {
+                //title: 'Title goes here' + data2.getColumnLabel(1),
+                title: 'Dollar amount in $1000',
+                format: '$###,###',
+                //minValue: 0,
+                gridlines: {
+                    count: 10
+                }
+            },
+            legend: {
+                position: 'top'
+            }
+        },
+        view: {
+            columns: [1, 2, 3, 4],
+            rows: data2.getFilteredRows([{column: 0, value: data.getValue(0, 0)}])
+        }
+    });
+
+    google.visualization.events.addListener(chart, 'select', function () {
+        var sel = chart.getChart().getSelection();
+        if (sel.length) {
+            var division = data.getValue(sel[0].row, 0);
+            var rows = data2.getFilteredRows([{
+                column: 0,
+                value: division
+            }]);
+            var view = chart2.getView();
+            var title = 'Division Breakdown for ' + division;
+            view.rows = rows;
+            chart2.setOption('title', title);
+            chart2.setView(view);
+            chart2.draw();
+        }
+    });
+
+    chart.draw();
+}
+    }
+
+  });
+
+</script>
